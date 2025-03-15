@@ -59,21 +59,34 @@ ul, ol {
 
 /* ===== HEADER STYLES ===== */
 header {
-    background-color: var(--card-background);
+    background: var(--card-background);
+    padding: 1rem 2rem;
     box-shadow: var(--shadow);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
 }
 
-.logo h1 {
-    color: var(--primary-color);
-    font-weight: 700;
-    margin: 0;
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-img {
+    height: 40px;
+    width: auto;
+    transition: opacity 0.3s ease;
+}
+
+.logo-img:hover {
+    opacity: 0.8;
+}
+
+.footer-logo {
+    height: 40px;
+    width: auto;
+    margin-bottom: 1rem;
 }
 
 nav ul {
@@ -119,6 +132,7 @@ main {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 0 1rem;
+    padding-bottom: 80px;
 }
 
 .dashboard-header {
@@ -313,7 +327,7 @@ main {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.5rem;
-    color: #4a5568;
+    color: var(--text-secondary);
 }
 
 .trait-meter {
@@ -330,19 +344,19 @@ main {
     left: 0;
     top: 0;
     height: 100%;
-    background: #63B3ED;
-    width: 0;
+    background: var(--primary-color);
+    width: var(--meter-width, 0);
     transition: width 0.5s ease;
 }
 
 .personality-type {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--primary-dark);
     margin-top: 1rem;
 }
 
 .personality-desc {
-    color: #4a5568;
+    color: var(--text-secondary);
     font-size: 0.9rem;
     margin-top: 0.5rem;
 }
@@ -624,9 +638,8 @@ main {
 
 /* ===== FOOTER STYLES ===== */
 footer {
-    background-color: var(--card-background);
-    padding: 1.5rem 2rem;
-    margin-top: 3rem;
+    background: var(--card-background);
+    padding: 2rem;
     border-top: 1px solid var(--border-color);
 }
 
@@ -636,6 +649,13 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
 }
 
 .footer-links {
@@ -744,6 +764,22 @@ footer {
     .scenario-analysis, .cash-flow, .feedback {
         min-height: 300px;
     }
+    
+    .metric-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .logo-img {
+        height: 35px;
+    }
+    
+    .footer-logo {
+        height: 35px;
+    }
+    
+    .logo {
+        gap: 0.75rem;
+    }
 }
 
 /* Input Styles */
@@ -802,6 +838,11 @@ input[type="number"]:focus, textarea:focus {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
+/* Ensure the Kepribadian Finansial card spans 2 columns */
+.card.col-span-2 {
+    grid-column: span 2;
+}
+
 /* Tambahkan CSS untuk grafik */
 .chart-container {
     margin-top: 1rem;
@@ -842,13 +883,6 @@ input[type="number"]:focus, textarea:focus {
 #cerita-uang-chart {
     margin-top: -30px; /* Untuk efek mountain yang lebih dominan */
     height: 200px;
-}
-
-.mountain-tooltip {
-    background: #2d3748 !important;
-    color: white !important;
-    border-radius: 6px !important;
-    padding: 8px 12px !important;
 }
 
 .chart-legend {
@@ -968,4 +1002,762 @@ input[type="number"]:focus, textarea:focus {
 
 .improvement-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #a5d6a7;
+}
+
+/* Missing col-span-full class */
+.col-span-full {
+    grid-column: 1 / -1;
+}
+
+#loading-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    text-align: center;
+    z-index: 1000;
+}
+
+.error-message {
+    background: var(--danger-color);
+    color: white;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+}
+
+/* Oopsie Spots Styles */
+.oopsie-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.risk-level {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.risk-level.low-risk {
+    background-color: #e6f4ea;
+    color: #2e7d32;
+}
+
+.risk-level.high-risk {
+    background-color: #fdeaea;
+    color: #d32f2f;
+}
+
+.risk-level.analyzing {
+    background-color: #fff8e6;
+    color: #f57c00;
+}
+
+.risk-level.error {
+    background-color: #fdeaea;
+    color: #d32f2f;
+}
+
+.oopsie-recommendations {
+    margin-top: 1rem;
+}
+
+.recommendation {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    background-color: var(--card-background);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.rec-type {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.rec-message {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.no-oopsies {
+    text-align: center;
+    padding: 1rem;
+    color: #666;
+}
+
+/* Inventory Tracker Styles */
+.inventory-item {
+    background: var(--card-background);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0.5rem;
+}
+
+.item-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.item-quantity {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Growth Opportunities Styles */
+.growth-item {
+    background: var(--card-background);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0.5rem;
+}
+
+.growth-title {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.growth-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Digital Transformation Checklist Styles */
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.checklist-item input[type="checkbox"] {
+    accent-color: var(--primary-color);
+}
+
+.checklist-item span {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+/* Financial Education Styles */
+.education-item {
+    background: var(--card-background);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0.5rem;
+}
+
+.education-item a {
+    color: var(--primary-color);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.education-item a:hover {
+    text-decoration: underline;
+}
+
+/* Kepribadian Finansial Card Styles */
+.personality-details {
+    margin-bottom: 1.5rem;
+}
+
+.trait {
+    margin-bottom: 1.5rem;
+}
+
+.trait-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.trait-meter {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.trait-meter::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: var(--primary-color);
+    width: var(--meter-width, 0);
+    transition: width 0.5s ease;
+}
+
+.personality-type {
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-top: 1rem;
+}
+
+.personality-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Horizontal scroll container */
+.inefficiency-scroll-container {
+    overflow-x: auto;
+    padding-bottom: 8px; /* Space for scrollbar */
+}
+
+/* Horizontal list layout */
+.inefficiency-horizontal-list {
+    display: flex;
+    gap: 1rem;
+    padding: 0 1rem;
+    min-width: min-content;
+}
+
+/* Style for each inefficiency item */
+.insight-item {
+    flex: 0 0 280px; /* Fixed width for each item */
+    background: #fff3e0;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.insight-item:hover {
+    transform: translateY(-2px);
+}
+
+/* Scrollbar styling */
+.inefficiency-scroll-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.inefficiency-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.inefficiency-scroll-container::-webkit-scrollbar-thumb {
+    background: #c8e6c9;
+    border-radius: 3px;
+}
+
+.inefficiency-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #a5d6a7;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 480px) {
+    /* Header adjustments */
+    header {
+        padding: 0.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    nav ul {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    nav ul li {
+        margin: 0;
+    }
+
+    /* Dashboard grid adjustments */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .card {
+        grid-column: span 1 !important;
+        padding: 1rem;
+    }
+    
+    /* Chart containers */
+    .chart-container {
+        height: 200px;
+        margin: 0 -1rem;
+        width: calc(100% + 2rem);
+    }
+    
+    /* Money story card */
+    .metric-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .metric-box {
+        padding: 0.75rem;
+    }
+    
+    /* Personality card */
+    .personality-details {
+        padding: 0.5rem;
+    }
+    
+    .trait {
+        margin-bottom: 1rem;
+    }
+    
+    /* Improvement opportunities */
+    .improvement-scroll-container {
+        margin: 0 -1rem;
+        width: calc(100% + 2rem);
+    }
+    
+    .recommendation-item {
+        flex: 0 0 90%;
+        padding: 0.75rem;
+    }
+    
+    /* Inefficiency indicators */
+    .inefficiency-scroll-container {
+        margin: 0 -1rem;
+        width: calc(100% + 2rem);
+    }
+    
+    .insight-item {
+        flex: 0 0 90%;
+        padding: 0.75rem;
+    }
+    
+    /* Import section */
+    .import-container {
+        padding: 1rem;
+    }
+    
+    .file-upload label {
+        padding: 0.75rem;
+    }
+    
+    /* About section */
+    .about-container {
+        padding: 1rem;
+    }
+    
+    /* Footer */
+    footer {
+        padding: 1rem;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .footer-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem 1rem;
+    }
+    
+    /* Typography adjustments */
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.25rem;
+    }
+    
+    h3 {
+        font-size: 1.1rem;
+    }
+    
+    .metric-value {
+        font-size: 1.25rem;
+    }
+    
+    /* Buttons */
+    .btn {
+        width: 100%;
+        padding: 0.75rem;
+    }
+    
+    /* Loading indicator */
+    #loading-indicator {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .bottom-nav {
+        padding: 0.25rem 0;
+    }
+    
+    .bottom-nav a {
+        padding: 0.25rem;
+    }
+    
+    .bottom-nav svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .bottom-nav span {
+        font-size: 0.7rem;
+    }
+    
+    main {
+        padding-bottom: 60px;
+    }
+}
+
+/* Additional mobile enhancements */
+@media (hover: none) {
+    .card:hover {
+        transform: none;
+    }
+    
+    .recommendation-item:hover {
+        transform: none;
+    }
+    
+    .insight-item:hover {
+        transform: none;
+    }
+}
+
+/* Touch-friendly elements */
+button, .btn, .file-upload label {
+    min-height: 44px; /* Minimum touch target size */
+}
+
+input, textarea, select {
+    min-height: 44px;
+    font-size: 16px; /* Prevent iOS zoom on focus */
+}
+
+/* Bottom Navigation Styles */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--card-background);
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.bottom-nav ul {
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+    margin: 0;
+}
+
+.bottom-nav li {
+    list-style: none;
+    flex: 1;
+    text-align: center;
+}
+
+.bottom-nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.bottom-nav a.active {
+    color: var(--primary-color);
+}
+
+.bottom-nav svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 0.25rem;
+}
+
+.bottom-nav span {
+    font-size: 0.75rem;
+}
+
+/* Inefficiency Indicators Card - Mobile Specific */
+@media (max-width: 480px) {
+    .inefficiency-card {
+        margin: 0 -1rem;
+        width: calc(100% + 2rem);
+        border-radius: 0;
+        box-shadow: none;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 0;
+    }
+    
+    .inefficiency-scroll-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 1rem;
+        width: 100%;
+    }
+    
+    .inefficiency-horizontal-list {
+        display: flex;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        min-width: min-content;
+        width: max-content;
+    }
+    
+    .insight-item {
+        flex: 0 0 85vw; /* Use viewport width for consistent sizing */
+        padding: 1rem;
+        border-radius: 8px;
+        background: var(--card-background);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-right: 0.75rem;
+        width: 85vw; /* Ensure consistent width */
+        box-sizing: border-box;
+    }
+    
+    .insight-item:last-child {
+        margin-right: 1rem; /* Add extra space after last item */
+    }
+    
+    .insight-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .insight-icon {
+        font-size: 1.25rem;
+    }
+    
+    .insight-title {
+        font-size: 0.9rem;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    
+    .insight-value {
+        margin-left: 0;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .insight-description {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    
+    .no-issues {
+        width: 100%;
+        padding: 1rem;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+}
+
+/* Scrollbar styling */
+.inefficiency-scroll-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.inefficiency-scroll-container::-webkit-scrollbar-track {
+    background: var(--border-color);
+}
+
+.inefficiency-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Add these new styles for better mobile experience */
+.inefficiency-card {
+    background: var(--card-background);
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+.inefficiency-scroll-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.inefficiency-scroll-container::-webkit-scrollbar-track {
+    background: var(--border-color);
+}
+
+.inefficiency-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Dashboard Guide Styles */
+.dashboard-guide {
+    margin-top: 2rem;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.guide-item {
+    background: var(--card-background);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.guide-item h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.guide-item ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+}
+
+.guide-item li {
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .dashboard-guide {
+        grid-template-columns: 1fr;
+    }
+    
+    .guide-item {
+        padding: 1rem;
+    }
+}
+
+/* Add date filter styles */
+.date-filter {
+    background: var(--card-background);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-top: 1rem;
+}
+
+.date-filter input[type="date"] {
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-family: inherit;
+}
+
+.date-filter input[type="date"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.date-filter label {
+    color: var(--text-secondary);
+}
+
+/* ===== MODAL STYLES ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+.modal-content h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-dark);
+}
+
+.modal-content p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.modal-buttons .btn {
+    min-width: 200px;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 1.5rem;
+    }
+    
+    .modal-content h2 {
+        font-size: 1.8rem;
+    }
+    
+    .modal-content p {
+        font-size: 1rem;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .modal-buttons .btn {
+        width: 100%;
+    }
 }

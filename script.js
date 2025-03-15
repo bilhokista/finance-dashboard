@@ -5,24 +5,24 @@ let charts = {};
 // Sample data for testing
 const sampleData = {
     monthly: [
-        { bulan: 'Jan', pendapatan: 45000, pengeluaran: 38000, laba: 7000 },
-        { bulan: 'Feb', pendapatan: 48000, pengeluaran: 39500, laba: 8500 },
-        { bulan: 'Mar', pendapatan: 52000, pengeluaran: 41000, laba: 11000 },
-        { bulan: 'Apr', pendapatan: 49000, pengeluaran: 40000, laba: 9000 },
-        { bulan: 'May', pendapatan: 53000, pengeluaran: 42500, laba: 10500 },
-        { bulan: 'Jun', pendapatan: 55000, pengeluaran: 43000, laba: 12000 }
+        { bulan: 'Jan', pendapatan: 45000000, pengeluaran: 38000000, laba: 7000000 },
+        { bulan: 'Feb', pendapatan: 48000000, pengeluaran: 39500000, laba: 8500000 },
+        { bulan: 'Mar', pendapatan: 52000000, pengeluaran: 41000000, laba: 11000000 },
+        { bulan: 'Apr', pendapatan: 49000000, pengeluaran: 40000000, laba: 9000000 },
+        { bulan: 'May', pendapatan: 53000000, pengeluaran: 42500000, laba: 10500000 },
+        { bulan: 'Jun', pendapatan: 55000000, pengeluaran: 43000000, laba: 12000000 }
     ],
     kategoriPengeluaran: [
-        { kategori: 'Sewa', jumlah: 12000 },
-        { kategori: 'Gaji', jumlah: 18000 },
-        { kategori: 'Pemasaran', jumlah: 5000 },
-        { kategori: 'Utilitas', jumlah: 2500 },
-        { kategori: 'Suplai', jumlah: 3500 },
-        { kategori: 'Lainnya', jumlah: 2000 }
+        { kategori: 'Sewa', jumlah: 12000000 },
+        { kategori: 'Gaji', jumlah: 18000000 },
+        { kategori: 'Pemasaran', jumlah: 5000000 },
+        { kategori: 'Utilitas', jumlah: 2500000 },
+        { kategori: 'Suplai', jumlah: 3500000 },
+        { kategori: 'Lainnya', jumlah: 2000000 }
     ],
     ketidakefisienan: [
         { nama: 'Biaya Marketing Tinggi', nilai: '10.5%', tingkat: 'sedang', deskripsi: 'Biaya marketing di atas rata-rata industri' },
-        { nama: 'Penghasilan Per Karyawan Rendah', nilai: '$8,700', tingkat: 'tinggi', deskripsi: 'Di bawah standar industri $12,000 per karyawan' },
+        { nama: 'Penghasilan Per Karyawan Rendah', nilai: 'Rp8.700.000', tingkat: 'tinggi', deskripsi: 'Di bawah standar industri Rp12.000.000 per karyawan' },
         { nama: 'Biaya Variabel Tinggi', nilai: '35%', tingkat: 'rendah', deskripsi: 'Sedikit di atas rentang optimal (30-33%)' }
     ],
     improvements: [
@@ -31,7 +31,7 @@ const sampleData = {
         { title: 'Mengoptimalkan Manajemen Inventaris', deskripsi: 'Inventaris saat ini di bawah tingkat optimal', tindakan: 'Menerapkan sistem inventaris just-in-time' }
     ],
     financialCharacter: {
-        type: 'Balanced Growth',
+        type: 'Pertumbuhan Seimbang',
         deskripsi: 'Bisnis Anda menunjukkan pendekatan yang seimbang dengan fokus pertumbuhan yang sedang dan toleransi risiko yang wajar, sambil tetap mempertahankan efisiensi yang wajar.',
         traits: {
             riskTolerance: 65,
@@ -59,6 +59,29 @@ const importBtn = document.getElementById('import-btn');
 const sampleDataBtn = document.getElementById('sample-data-btn');
 const templateBtn = document.getElementById('template-btn');
 
+// Add date utilities
+const dateUtils = {
+    formatDate: (dateStr) => {
+        const date = new Date(dateStr);
+        if (isNaN(date)) return 'Tanggal Invalid';
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    },
+    parseDate: (dateStr) => {
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+        return new Date(dateStr);
+    },
+    isValidDate: (date) => {
+        return date instanceof Date && !isNaN(date);
+    }
+};
+
 // ===== EVENT LISTENERS =====
 document.addEventListener('DOMContentLoaded', () => {
     // Safely initialize elements
@@ -66,6 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = document.querySelector(selector);
         if (el) el.addEventListener(event, handler);
     };
+
+    // Modal buttons
+    initListener('#start-analysis', 'click', () => {
+        document.getElementById('landing-modal').classList.remove('active');
+        document.querySelector('a[href="#import"]').click();
+    });
+
+    initListener('#learn-more', 'click', () => {
+        document.getElementById('landing-modal').classList.remove('active');
+        document.querySelector('a[href="#about"]').click();
+    });
 
     // Navigation
     document.querySelectorAll('nav ul li a').forEach(link => {
@@ -83,6 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
     initListener('#analyze-scenario-btn', 'click', analyzeScenario);
     initListener('#calculate-cash-flow-btn', 'click', calculateCashFlow);
     initListener('#submit-feedback-btn', 'click', submitFeedback);
+
+    // Set landing page as default active section
+    document.querySelector('#landing').classList.add('active-section');
+    document.querySelector('#landing').classList.remove('hidden-section');
+    document.querySelectorAll('main section:not(#landing)').forEach(section => {
+        section.classList.remove('active-section');
+        section.classList.add('hidden-section');
+    });
+
+    createDateFilter();
 });
 
 // ===== FILE HANDLING FUNCTIONS =====
@@ -158,27 +202,48 @@ function processCSV(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             try {
                 const csvData = e.target.result;
                 
-                // Use PapaParse to parse CSV
                 Papa.parse(csvData, {
                     header: true,
                     dynamicTyping: true,
-                    complete: function(results) {
+                    complete: function (results) {
                         if (results.errors.length > 0) {
                             console.error('CSV parsing errors:', results.errors);
                             reject('Error parsing CSV file');
                             return;
                         }
                         
-                        // Process the parsed data
-                        const processedData = processFinancialData(results.data);
-                        updateDashboard(processedData);
+                        const financialData = {
+                            daily: results.data.map(row => {
+                                const date = dateUtils.parseDate(row.tanggal);
+                                return {
+                                    tanggal: dateUtils.isValidDate(date) ? date.toISOString().split('T')[0] : 'Tanggal Invalid',
+                                    pendapatan: row.pendapatan || 0,
+                                    pengeluaran: row.pengeluaran || 0,
+                                    laba: row.laba || 0,
+                                    kategoriPendapatan: row.kategoriPendapatan || 'Other',
+                                    kategoriPengeluaran: row.kategoriPengeluaran || 'Other',
+                                    marketingExpenses: row.marketingExpenses || 0,
+                                    employeeCosts: row.employeeCosts || 0,
+                                    inventoryValue: row.inventoryValue || 0,
+                                    debtPayments: row.debtPayments || 0,
+                                    cashReserves: row.cashReserves || 0
+                                };
+                            }),
+                            kategoriPengeluaran: [], // Not available in CSV
+                            inventory: [], // Not available in CSV
+                            employees: [], // Not available in CSV
+                            debt: [] // Not available in CSV
+                        };
+
+                        // Update the dashboard with the processed data
+                        updateDashboard(financialData);
                         resolve();
                     },
-                    error: function(error) {
+                    error: function (error) {
                         reject(error);
                     }
                 });
@@ -187,7 +252,7 @@ function processCSV(file) {
             }
         };
         
-        reader.onerror = function() {
+        reader.onerror = function () {
             reject('Error reading file');
         };
         
@@ -199,41 +264,103 @@ async function processExcel(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             try {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 
-                // Get first sheet
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
+                // Pastikan nama sheet sesuai dengan template
+                const sheetNames = workbook.SheetNames;
                 
-                // Convert to JSON
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); // Use header: 1 to get an array of arrays
-                
-                // Convert the array of arrays to an array of objects
-                const headers = jsonData[0]; // First row as headers
-                const dataRows = jsonData.slice(1); // Remaining rows as data
+                // Buat objek untuk menyimpan data
+                const financialData = {
+                    daily: [],
+                    kategoriPengeluaran: [],
+                    inventory: [],
+                    employees: [],
+                    debt: [],
+                    assets: 0,
+                    cashReserve: 0,
+                    monthlyExpenses: 0
+                };
 
-                const processedData = dataRows.map(row => {
-                    return {
-                        bulan: row[0], // Assuming the first column is month
-                        pendapatan: row[1], // Assuming the second column is revenue
-                        pengeluaran: row[2] // Assuming the third column is expenses
-                    };
+                // Proses setiap sheet
+                sheetNames.forEach(sheetName => {
+                    const sheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet);
+                    
+                    switch(sheetName) {
+                        case 'Data Keuangan':
+                            financialData.daily = jsonData.map(row => ({
+                                tanggal: row.Tanggal || 'YYYY-MM-DD',
+                                pendapatan: row.Pendapatan || 0,
+                                pengeluaran: row.Pengeluaran || 0,
+                                laba: (row.Pendapatan || 0) - (row.Pengeluaran || 0),
+                                kategoriPengeluaran: row['Kategori Pengeluaran'] || 'Lainnya',
+                                deskripsi: row.Deskripsi || '',
+                                metodePembayaran: row['Metode Pembayaran'] || 'Tunai'
+                            }));
+                            break;
+                            
+                        case 'Kategori Pengeluaran':
+                            financialData.kategoriPengeluaran = jsonData.map(row => ({
+                                kategori: row.Kategori || 'Lainnya',
+                                jumlah: row['Budget Bulanan'] || 0,
+                                deskripsi: row.Deskripsi || ''
+                            }));
+                            break;
+                            
+                        case 'Inventaris':
+                            financialData.inventory = jsonData.map(row => ({
+                                kode: row['Kode Barang'] || '',
+                                nama: row['Nama Barang'] || '',
+                                stokAwal: row['Stok Awal'] || 0,
+                                stokMasuk: row['Stok Masuk'] || 0,
+                                stokKeluar: row['Stok Keluar'] || 0,
+                                stokAkhir: row['Stok Akhir'] || 0,
+                                hargaSatuan: row['Harga Satuan'] || 0
+                            }));
+                            break;
+                            
+                        case 'Karyawan':
+                            financialData.employees = jsonData.map(row => ({
+                                nik: row.NIK || '',
+                                nama: row.Nama || '',
+                                jabatan: row.Jabatan || '',
+                                gaji: row.Gaji || 0,
+                                tunjangan: row.Tunjangan || 0,
+                                totalGaji: row['Total Gaji'] || 0
+                            }));
+                            break;
+                            
+                        case 'Hutang':
+                            financialData.debt = jsonData.map(row => ({
+                                tanggal: row.Tanggal || 'YYYY-MM-DD',
+                                jenis: row['Jenis Hutang'] || '',
+                                jumlah: row.Jumlah || 0,
+                                jatuhTempo: row['Jatuh Tempo'] || 'YYYY-MM-DD',
+                                status: row.Status || 'Belum Lunas'
+                            }));
+                            break;
+                    }
                 });
 
-                // Process the data into the expected format
-                const finalData = processFinancialData(processedData);
-                updateDashboard(finalData);
-                resolve();
+                // Hitung total hutang
+                financialData.totalDebt = financialData.debt.reduce((sum, d) => sum + (d.jumlah || 0), 0);
+                
+                // Update dashboard dengan data yang diproses
+                updateDashboard(financialData);
+                console.log('Processed Financial Data:', financialData);
+                resolve(financialData);
             } catch (error) {
+                console.error('Error processing Excel file:', error);
                 reject(error);
             }
         };
         
-        reader.onerror = function() {
-            reject('Error reading file');
+        reader.onerror = function (error) {
+            console.error('Error reading file:', error);
+            reject(error);
         };
         
         reader.readAsArrayBuffer(file);
@@ -241,19 +368,19 @@ async function processExcel(file) {
 }
 
 function processFinancialData(rawData) {
-    // Pastikan rawData adalah array
+    // Ensure rawData is an array and has valid structure
     const validatedData = Array.isArray(rawData) ? rawData : [];
     
     return {
-        monthly: validatedData.map(item => ({
-            bulan: item.bulan || `Bulan ${item.month || ''}`, // Fallback untuk bulan
-            pendapatan: item.pendapatan || 0,
-            pengeluaran: item.pengeluaran || 0,
-            laba: (item.pendapatan || 0) - (item.pengeluaran || 0)
+        daily: validatedData.map(item => ({
+            tanggal: item?.tanggal || `Tanggal ${item?.date || ''}`, // Safe access with fallback
+            pendapatan: item?.pendapatan || 0,
+            pengeluaran: item?.pengeluaran || 0,
+            laba: (item?.pendapatan || 0) - (item?.pengeluaran || 0)
         })),
-        ketidakefisienan: sampleData.ketidakefisienan, // You can modify this to calculate based on real data
-        improvements: sampleData.improvements, // You can modify this to calculate based on real data
-        financialCharacter: sampleData.financialCharacter, // You can modify this to calculate based on real data
+        ketidakefisienan: sampleData.ketidakefisienan,
+        improvements: sampleData.improvements,
+        financialCharacter: sampleData.financialCharacter,
         kategoriPengeluaran: sampleData.kategoriPengeluaran
     };
 }
@@ -265,26 +392,56 @@ function loadSampleData() {
 }
 
 function downloadTemplate() {
-    // Create a simple template Excel file
-    const worksheet = XLSX.utils.json_to_sheet([
-        {
-            bulan: 'Jan',
-            pendapatan: 50000,
-            pengeluaran: 40000,
-            sewa: 5000,
-            gaji: 20000,
-            pemasaran: 8000,
-            utilitas: 2000,
-            suplai: 3000,
-            lainnya: 2000
-        }
-    ]);
-    
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Financial Data');
-    
-    // Generate file and trigger download
-    XLSX.writeFile(workbook, 'financial_data_template.xlsx');
+    // Buat workbook baru
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Data Keuangan Harian
+    const financialData = [
+        ["Tanggal", "Pendapatan", "Pengeluaran", "Kategori Pengeluaran", "Deskripsi", "Metode Pembayaran"],
+        ["2023-01-01", 1000000, 500000, "Bahan Baku", "Pembelian tepung", "Transfer Bank"],
+        ["2023-01-02", 1500000, 300000, "Operasional", "Biaya listrik", "Tunai"]
+    ];
+    const ws1 = XLSX.utils.aoa_to_sheet(financialData);
+    XLSX.utils.book_append_sheet(wb, ws1, "Data Keuangan");
+
+    // Sheet 2: Kategori Pengeluaran
+    const expenseCategories = [
+        ["Kode", "Kategori", "Deskripsi", "Budget Bulanan"],
+        ["BB", "Bahan Baku", "Bahan baku produksi", 5000000],
+        ["OP", "Operasional", "Biaya operasional harian", 2000000]
+    ];
+    const ws2 = XLSX.utils.aoa_to_sheet(expenseCategories);
+    XLSX.utils.book_append_sheet(wb, ws2, "Kategori Pengeluaran");
+
+    // Sheet 3: Manajemen Inventaris
+    const inventoryData = [
+        ["Kode Barang", "Nama Barang", "Stok Awal", "Stok Masuk", "Stok Keluar", "Stok Akhir", "Harga Satuan"],
+        ["BRG001", "Tepung Terigu", 100, 50, 30, 120, 10000],
+        ["BRG002", "Gula Pasir", 50, 20, 10, 60, 15000]
+    ];
+    const ws3 = XLSX.utils.aoa_to_sheet(inventoryData);
+    XLSX.utils.book_append_sheet(wb, ws3, "Inventaris");
+
+    // Sheet 4: Data Karyawan
+    const employeeData = [
+        ["NIK", "Nama", "Jabatan", "Gaji", "Tunjangan", "Total Gaji"],
+        ["001", "Budi Santoso", "Produksi", 3000000, 500000, 3500000],
+        ["002", "Ani Wijaya", "Admin", 2500000, 300000, 2800000]
+    ];
+    const ws4 = XLSX.utils.aoa_to_sheet(employeeData);
+    XLSX.utils.book_append_sheet(wb, ws4, "Karyawan");
+
+    // Sheet 5: Hutang & Liabilitas
+    const debtData = [
+        ["Tanggal", "Jenis Hutang", "Jumlah", "Jatuh Tempo", "Status"],
+        ["2023-01-01", "Pinjaman Bank", 10000000, "2023-06-01", "Belum Lunas"],
+        ["2023-01-15", "Hutang Supplier", 5000000, "2023-02-01", "Lunas"]
+    ];
+    const ws5 = XLSX.utils.aoa_to_sheet(debtData);
+    XLSX.utils.book_append_sheet(wb, ws5, "Hutang");
+
+    // Simpan file
+    XLSX.writeFile(wb, "FinancialLens_Template.xlsx");
 }
 
 // ===== DASHBOARD UPDATE FUNCTIONS =====
@@ -315,14 +472,14 @@ function updateDashboard(data) {
     // Update KPIs
     updateKPIs();
 
-    // Update Oopsie Spots
-    updateOopsieSpots();
+    // Log the data for debugging
+    console.log('Updated Financial Data:', financialData);
 }
 
 function updateProfitLossMetrics() {
     // Calculate totals
-    const totalRevenue = financialData.monthly.reduce((sum, month) => sum + month.pendapatan, 0);
-    const totalExpenses = financialData.monthly.reduce((sum, month) => sum + month.pengeluaran, 0);
+    const totalRevenue = financialData.daily.reduce((sum, day) => sum + day.pendapatan, 0);
+    const totalExpenses = financialData.daily.reduce((sum, day) => sum + day.pengeluaran, 0);
     const totalProfit = totalRevenue - totalExpenses;
     
     // Update DOM
@@ -340,30 +497,27 @@ function updateProfitLossMetrics() {
 }
 
 async function updateFinancialCharacter() {
-    try {
-        if(!financialData || !financialData.monthly || financialData.monthly.length === 0) {
-            throw new Error('Data bulanan tidak tersedia');
+    const personality = PersonalityAnalyzer.analyze(financialData);
+
+    // Update UI
+    document.getElementById('personality-type').textContent = personality.type;
+    document.getElementById('personality-desc').textContent = personality.description;
+
+    // Update trait meters
+    const traits = personality.traits || {};
+    updateTraitMeter('risk-meter', traits.riskTolerance || 0);
+    updateTraitMeter('growth-meter', traits.growthFocus || 0);
+    updateTraitMeter('efficiency-meter', traits.efficiency || 0);
+}
+
+function updateTraitMeter(meterId, value) {
+    const meter = document.getElementById(meterId);
+    if (meter) {
+        meter.textContent = `${parseFloat(value.toFixed(2))}%`;
+        const meterBar = meter.closest('.trait').querySelector('.trait-meter');
+        if (meterBar) {
+            meterBar.style.setProperty('--meter-width', `${value}%`);
         }
-        
-        const analysis = await PersonalityAnalyzer.analyze(financialData);
-        
-        const character = {
-            type: determinePersonalityType(analysis),
-            description: generateDescription(analysis),
-            traits: analysis
-        };
-        
-        // Update UI dengan safeUpdate
-        safeUpdate('risk-meter', `${analysis.riskTolerance.toFixed(1)}%`);
-        safeUpdate('growth-meter', `${analysis.growthFocus.toFixed(1)}%`);
-        safeUpdate('efficiency-meter', `${analysis.efficiency.toFixed(1)}%`);
-        safeUpdate('personality-type', character.type);
-        safeUpdate('personality-desc', character.description);
-        
-    } catch (error) {
-        console.error('Error analisis kepribadian:', error);
-        safeUpdate('personality-type', 'Analisis Gagal');
-        safeUpdate('personality-desc', 'Data tidak cukup untuk menganalisis kepribadian finansial');
     }
 }
 
@@ -408,47 +562,36 @@ const AI = {
     analisisTitikMasalah: (data) => {
         const insights = [];
         
-        // 1. Analisis kategori pengeluaran
-        const totalPengeluaran = data.kategoriPengeluaran.reduce((sum, cat) => sum + cat.jumlah, 0);
+        // 1. Analyze expense categories
+        const totalExpenses = data.kategoriPengeluaran.reduce((sum, cat) => sum + cat.jumlah, 0);
+        
         data.kategoriPengeluaran.forEach(cat => {
-            const persentase = (cat.jumlah / totalPengeluaran) * 100;
-            if(persentase > 30) { // Threshold 30%
+            const percentage = (cat.jumlah / totalExpenses) * 100;
+            
+            // Flag categories exceeding 20% of total expenses
+            if (percentage > 20) {
                 insights.push({
                     jenis: 'Kategori Besar',
-                    nama: `${cat.kategori}`,
-                    nilai: `${persentase.toFixed(1)}%`,
-                    deskripsi: `Pengeluaran ${cat.kategori} melebihi 30% dari total pengeluaran`
+                    nama: cat.kategori,
+                    nilai: `${percentage.toFixed(1)}%`,
+                    deskripsi: `Pengeluaran ${cat.kategori} melebihi 20% dari total pengeluaran`
                 });
             }
         });
 
-        // 2. Analisis tren laba
-        const trenLaba = tf.tensor(data.monthly.map(m => m.pendapatan - m.pengeluaran));
-        const model = tf.sequential({
-            layers: [tf.layers.dense({units: 1, inputShape: [1]})]
-        });
+        // 2. Analyze profit anomalies
+        const dailyProfits = data.daily.map(d => d.pendapatan - d.pengeluaran);
+        const avgProfit = dailyProfits.reduce((sum, p) => sum + p, 0) / dailyProfits.length;
         
-        model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
-        const xs = tf.tensor1d(Array.from({length: data.monthly.length}, (_, i) => i));
-        const ys = trenLaba;
-        
-        model.fit(xs, ys, {epochs: 50}).then(() => {
-            const prediksi = model.predict(xs);
-            const residuals = ys.sub(prediksi).abs();
-            const threshold = residuals.mean().dataSync()[0];
-            
-            residuals.data().then(values => {
-                values.forEach((val, idx) => {
-                    if(val > threshold * 1.5) {
+        dailyProfits.forEach((profit, index) => {
+            if (profit < avgProfit * 0.5) { // Flag days with profit < 50% of average
                         insights.push({
                             jenis: 'Anomali Laba',
-                            nama: `Bulan ${data.monthly[idx].bulan}`,
-                            nilai: `${val.toFixed(0)}`,
-                            deskripsi: `Laba tidak sesuai tren (deviasi tinggi)`
-                        });
-                    }
+                    nama: `Tanggal ${data.daily[index].tanggal}`,
+                    nilai: formatCurrency(profit),
+                    deskripsi: `Laba lebih rendah dari rata-rata (${formatCurrency(avgProfit)})`
                 });
-            });
+            }
         });
 
         return insights;
@@ -459,8 +602,8 @@ const AI = {
         const rekomendasi = [];
         
         // Validasi data
-        const totalLaba = data.monthly.reduce((sum, m) => sum + (m.pendapatan - m.pengeluaran), 0);
-        const totalPengeluaran = data.monthly.reduce((sum, m) => sum + m.pengeluaran, 0);
+        const totalLaba = data.daily.reduce((sum, d) => sum + (d.pendapatan - d.pengeluaran), 0);
+        const totalPengeluaran = data.daily.reduce((sum, d) => sum + d.pengeluaran, 0);
         
         // 1. Analisis penghematan biaya dengan validasi
         data.kategoriPengeluaran.forEach(cat => {
@@ -486,8 +629,8 @@ const AI = {
         });
 
         // 2. Analisis peningkatan pendapatan
-        const pertumbuhanRataRata = data.monthly.slice(-3).reduce((sum, m) => {
-            return sum + ((m.pendapatan - m.pengeluaran) / m.pendapatan * 100);
+        const pertumbuhanRataRata = data.daily.slice(-3).reduce((sum, d) => {
+            return sum + ((d.pendapatan - d.pengeluaran) / d.pendapatan * 100);
         }, 0) / 3;
 
         if(pertumbuhanRataRata < 10) {
@@ -500,8 +643,8 @@ const AI = {
         }
 
         // 3. Analisis efisiensi operasional
-        const rasioOperasional = (data.monthly.reduce((sum, m) => sum + m.pengeluaran, 0) /
-                                data.monthly.reduce((sum, m) => sum + m.pendapatan, 1)) * 100;
+        const rasioOperasional = (data.daily.reduce((sum, d) => sum + d.pengeluaran, 0) /
+                                data.daily.reduce((sum, d) => sum + d.pendapatan, 1)) * 100;
         
         if(rasioOperasional > 70) {
             rekomendasi.push({
@@ -545,12 +688,23 @@ const AI = {
 // ===== UPDATE FUNGSI YANG ADA =====
 function updateInefficiencyIndicators() {
     const inefficiencyList = document.getElementById('inefficiency-list');
-    if(!inefficiencyList) return;
-    
+    if (!inefficiencyList) return;
+
+    // Show loading state
+    inefficiencyList.innerHTML = '<div class="p-2 text-center text-gray-500">🔍 Mencari masalah...</div>';
+
+    // Validate financial data
+    if (!financialData || !financialData.kategoriPengeluaran || !Array.isArray(financialData.kategoriPengeluaran)) {
+        inefficiencyList.innerHTML = '<div class="no-issues">🎉 Tidak ada masalah terdeteksi</div>';
+        return;
+    }
+
+    // Analyze inefficiencies
     const insights = AI.analisisTitikMasalah(financialData);
     
-    inefficiencyList.innerHTML = insights.length > 0 
-        ? insights.map(insight => `
+    // Update UI based on analysis
+    if (insights.length > 0) {
+        inefficiencyList.innerHTML = insights.map(insight => `
             <div class="insight-item">
                 <div class="insight-header">
                     <span class="insight-icon">⚠️</span>
@@ -559,8 +713,10 @@ function updateInefficiencyIndicators() {
                 </div>
                 <div class="insight-description">${insight.deskripsi}</div>
             </div>
-        `).join('')
-        : '<div class="no-issues">🎉 Tidak ada masalah terdeteksi</div>';
+        `).join('');
+    } else {
+        inefficiencyList.innerHTML = '<div class="no-issues">🎉 Tidak ada masalah terdeteksi</div>';
+    }
 }
 
 function updateImprovementOpportunities() {
@@ -589,8 +745,8 @@ function updateCharts() {
 
     const ctx = document.getElementById('cerita-uang-chart').getContext('2d');
     
-    const labels = (financialData?.monthly || []).map((m, index) => 
-        m?.bulan || `Bulan ${index + 1}`
+    const labels = (financialData?.daily || []).map(d => 
+        dateUtils.formatDate(d?.tanggal) || `Tanggal ${index + 1}`
     );
     
     charts.ceritaUang = new Chart(ctx, {
@@ -600,7 +756,7 @@ function updateCharts() {
             datasets: [
                 {
                     label: 'Pemasukan',
-                    data: (financialData.monthly || []).map(m => m?.pendapatan || 0),
+                    data: (financialData.daily || []).map(d => d?.pendapatan || 0),
                     borderColor: '#78E08F', // Hijau
                     backgroundColor: 'rgba(120, 224, 143, 0.1)',
                     borderWidth: 2,
@@ -611,7 +767,7 @@ function updateCharts() {
                 },
                 {
                     label: 'Pengeluaran',
-                    data: (financialData.monthly || []).map(m => m?.pengeluaran || 0),
+                    data: (financialData.daily || []).map(d => d?.pengeluaran || 0),
                     borderColor: '#FF7979', // Merah
                     backgroundColor: 'rgba(255, 121, 121, 0.1)',
                     borderWidth: 2,
@@ -622,7 +778,7 @@ function updateCharts() {
                 },
                 {
                     label: 'Laba',
-                    data: (financialData.monthly || []).map(m => m?.laba || 0),
+                    data: (financialData.daily || []).map(d => d?.laba || 0),
                     borderColor: '#63B3ED', // Biru
                     backgroundColor: 'rgba(99, 179, 237, 0.1)',
                     borderWidth: 2,
@@ -654,7 +810,7 @@ function updateCharts() {
                     padding: 12,
                     cornerRadius: 6,
                     callbacks: {
-                        title: (tooltipItems) => `Bulan ${tooltipItems[0].label}`,
+                        title: (tooltipItems) => `Tanggal ${tooltipItems[0].label}`,
                         label: function(context) {
                             return ` ${context.dataset.label}: ${formatCurrency(context.raw)}`;
                         }
@@ -687,7 +843,12 @@ function updateCharts() {
                 line: {
                     cubicInterpolation: 'monotone'
                 }
-            }
+            },
+            animation: {
+                duration: 300,
+                easing: 'easeOutQuart'
+            },
+            responsiveAnimationDuration: 300
         }
     });
 }
@@ -725,8 +886,8 @@ function updateExpenseBreakdown() {
 }
 
 function updateFinancialAnalysis() {
-    const totalRevenue = financialData.monthly.reduce((sum, month) => sum + month.pendapatan, 0);
-    const totalExpenses = financialData.monthly.reduce((sum, month) => sum + month.pengeluaran, 0);
+    const totalRevenue = financialData.daily.reduce((sum, day) => sum + day.pendapatan, 0);
+    const totalExpenses = financialData.daily.reduce((sum, day) => sum + day.pengeluaran, 0);
     const totalProfit = totalRevenue - totalExpenses;
 
     // Safe element updates
@@ -746,14 +907,49 @@ function updateFinancialAnalysis() {
     // Year-over-Year Growth
     const yoyGrowth = calculateYearOverYearGrowth(financialData);
     safeUpdate('year-over-year-growth-value', `${yoyGrowth.toFixed(1)}%`);
+
+    // === NEW: Localized Metrics ===
+    // Liquidity Ratio (Rasio Likuiditas)
+    const currentAssets = totalRevenue * 0.3; // Example: 30% of revenue as current assets
+    const currentLiabilities = totalExpenses * 0.2; // Example: 20% of expenses as current liabilities
+    const liquidityRatio = currentLiabilities > 0 ? (currentAssets / currentLiabilities).toFixed(2) : 'N/A';
+    safeUpdate('liquidity-ratio-value', liquidityRatio);
+
+    // Debt Ratio (Rasio Utang)
+    const totalDebt = 0; // Example: Assume no debt for now
+    const debtRatio = totalRevenue > 0 ? ((totalDebt / totalRevenue) * 100).toFixed(1) : 'N/A';
+    safeUpdate('debt-ratio-value', `${debtRatio}%`);
+
+    // Industry Benchmarks (Example: Retail)
+    const industryBenchmarks = {
+        profitMargin: 10.5, // Example: Retail industry average
+        expenseRatio: 65.0,
+        liquidityRatio: 1.5
+    };
+    safeUpdate('industry-profit-margin', `${industryBenchmarks.profitMargin}%`);
+    safeUpdate('industry-expense-ratio', `${industryBenchmarks.expenseRatio}%`);
+    safeUpdate('industry-liquidity-ratio', industryBenchmarks.liquidityRatio);
+
+    // === NEW: Loan Eligibility Checker ===
+    const loanEligibility = {
+        minProfitMargin: 10, // Minimum profit margin for eligibility
+        maxDebtRatio: 50, // Maximum debt ratio for eligibility
+        minLiquidityRatio: 1.2 // Minimum liquidity ratio for eligibility
+    };
+
+    const isEligible = profitMargin >= loanEligibility.minProfitMargin &&
+                      debtRatio <= loanEligibility.maxDebtRatio &&
+                      liquidityRatio >= loanEligibility.minLiquidityRatio;
+
+    safeUpdate('loan-eligibility-value', isEligible ? 'Eligible ✅' : 'Not Eligible ❌');
 }
 
 // Example function to calculate Year-over-Year Growth
 function calculateYearOverYearGrowth(data) {
-    if (data.monthly.length < 12) return 0; // Not enough data for YoY growth
+    if (data.daily.length < 12) return 0; // Not enough data for YoY growth
 
-    const lastYearRevenue = data.monthly.slice(0, 6).reduce((sum, month) => sum + month.pendapatan, 0); // First 6 months
-    const currentYearRevenue = data.monthly.slice(6).reduce((sum, month) => sum + month.pendapatan, 0); // Last 6 months
+    const lastYearRevenue = data.daily.slice(0, 6).reduce((sum, day) => sum + day.pendapatan, 0); // First 6 days
+    const currentYearRevenue = data.daily.slice(6).reduce((sum, day) => sum + day.pendapatan, 0); // Last 6 days
 
     return lastYearRevenue > 0 ? ((currentYearRevenue - lastYearRevenue) / lastYearRevenue) * 100 : 0;
 }
@@ -771,54 +967,83 @@ function updateKPIs() {
     safeUpdate('kpi-3-value', '🏋️ Okay');  // Debt-to-Equity
 }
 
-let budget = {
-    pendapatan: 0,
-    pengeluaran: 0
-};
-
-function setBudget() {
-    const revenueBudget = parseFloat(document.getElementById('budget-revenue').value) || 0;
-    const expensesBudget = parseFloat(document.getElementById('budget-expenses').value) || 0;
-
-    budget.pendapatan = revenueBudget;
-    budget.pengeluaran = expensesBudget;
-
-    updateBudgetStatus();
-}
-
-function updateBudgetStatus() {
-    const totalRevenue = financialData.monthly.reduce((sum, month) => sum + month.pendapatan, 0);
-    const totalExpenses = financialData.monthly.reduce((sum, month) => sum + month.pengeluaran, 0);
-
-    const revenueStatus = totalRevenue >= budget.pendapatan ? 'On Track' : 'Under Budget';
-    const expensesStatus = totalExpenses <= budget.pengeluaran ? 'On Track' : 'Over Budget';
-
-    document.getElementById('budget-status-value').textContent = `Pendapatan: ${revenueStatus}, Pengeluaran: ${expensesStatus}`;
-}
-
-function analyzeScenario() {
-    const projectedRevenue = parseFloat(document.getElementById('scenario-revenue').value) || 0;
-    const projectedExpenses = parseFloat(document.getElementById('scenario-expenses').value) || 0;
-
-    const projectedProfit = projectedRevenue - projectedExpenses;
-    const profitMargin = projectedRevenue > 0 ? (projectedProfit / projectedRevenue) * 100 : 0;
-
-    document.getElementById('scenario-results').innerHTML = `
-        <p>Projected Profit: ${formatCurrency(projectedProfit)}</p>
-        <p>Projected Profit Margin: ${profitMargin.toFixed(2)}%</p>
-    `;
-}
-
 function calculateCashFlow() {
-    const totalRevenue = financialData.monthly.reduce((sum, month) => sum + month.pendapatan, 0);
-    const totalExpenses = financialData.monthly.reduce((sum, month) => sum + month.pengeluaran, 0);
-    const projectedCashFlow = totalRevenue - totalExpenses;
+    const financialData = getFinancialData(); // Ensure this function returns the correct data
+    if (!financialData) {
+        console.error('Financial data is not available.');
+        return;
+    }
 
-    document.getElementById('projected-cash-flow').textContent = formatCurrency(projectedCashFlow);
+    // Calculate cash flow forecast
+    const forecastData = {
+        labels: ['Bulan 1', 'Bulan 2', 'Bulan 3', 'Bulan 4', 'Bulan 5', 'Bulan 6'],
+        values: [1000000, 1200000, 1100000, 1300000, 1400000, 1500000] // Example data
+    };
+
+    // Update the chart
+    updateCashFlowForecastChart(forecastData);
+}
+
+function updateCashFlowForecastChart(data) {
+    const ctx = document.getElementById('cash-flow-forecast-chart')?.getContext('2d');
+    
+    if (!ctx) {
+        console.error('Chart canvas not found. Ensure the element with ID "cash-flow-forecast-chart" exists in the DOM.');
+        return;
+    }
+
+    // Destroy existing chart instance if it exists
+    if (window.cashFlowChart) {
+        window.cashFlowChart.destroy();
+    }
+
+    // Create new chart
+    window.cashFlowChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Proyeksi Kas',
+                data: data.values,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Proyeksi Kas 6 Bulan ke Depan'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Jumlah (Rp)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Bulan'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function sanitizeInput(input) {
+    return input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function submitFeedback() {
-    const feedback = document.getElementById('user-feedback').value;
+    const feedback = sanitizeInput(document.getElementById('user-feedback').value);
     if (feedback) {
         // Here you can implement logic to send feedback to a server or store it locally
         console.log('Feedback submitted:', feedback);
@@ -854,345 +1079,196 @@ function handleNavClick(e) {
 
 // ===== MODEL AI KEPRIBADIAN =====
 const PersonalityAnalyzer = {
-    model: null,
-    
-    init: async function() {
-        // Arsitektur model
-        this.model = tf.sequential({
-            layers: [
-                tf.layers.dense({units: 16, activation: 'relu', inputShape: [8]}),
-                tf.layers.dense({units: 8, activation: 'relu'}),
-                tf.layers.dense({units: 3, activation: 'sigmoid'}) // Output: [risk, growth, efficiency]
-            ]
-        });
-        
-        // Compile model
-        this.model.compile({
-            optimizer: 'adam',
-            loss: 'meanSquaredError'
-        });
-        
-        // Latih dengan data sintetis
-        await this.trainSyntheticData();
-    },
-    
-    trainSyntheticData: async function() {
-        // Generate 1000 sampel data sintetis
-        const features = [];
-        const labels = [];
-        
-        for(let i = 0; i < 1000; i++) {
-            const data = this.generateSyntheticData();
-            features.push(data.features);
-            labels.push(data.label);
-        }
-        
-        // Konversi ke tensor
-        const xs = tf.tensor2d(features);
-        const ys = tf.tensor2d(labels);
-        
-        // Training
-        await this.model.fit(xs, ys, {
-            epochs: 50,
-            batchSize: 32
-        });
-    },
-    
-    generateSyntheticData: function() {
-        // Karakteristik acak
-        const revenueVolatility = Math.random();
-        const expenseStability = Math.random();
-        const profitMargin = Math.random();
-        const reinvestmentRatio = Math.random();
-        const debtRatio = Math.random();
-        const emergencyFund = Math.random();
-        const growthRate = Math.random();
-        const expenseCategories = Math.random();
-        
-        // Hitung label (ground truth)
-        const riskTolerance = 0.6 * revenueVolatility + 0.4 * debtRatio;
-        const growthFocus = 0.5 * growthRate + 0.3 * reinvestmentRatio + 0.2 * expenseCategories;
-        const efficiency = 0.4 * profitMargin + 0.3 * (1 - expenseStability) + 0.3 * emergencyFund;
-        
+    analyze: function(financialData) {
+        try {
+            const metrics = this.preprocessData(financialData);
+            return this.calculatePersonality(metrics);
+        } catch (error) {
+            console.error('Analisis Gagal:', error.message);
         return {
-            features: [
-                revenueVolatility,
-                expenseStability,
-                profitMargin,
-                reinvestmentRatio,
-                debtRatio,
-                emergencyFund,
-                growthRate,
-                expenseCategories
-            ],
-            label: [
+                type: 'Tidak Diketahui',
+                description: 'Data tidak cukup untuk menganalisis kepribadian finansial.',
+                traits: {
+                    riskTolerance: 0,
+                    growthFocus: 0,
+                    efficiency: 0
+                }
+            };
+        }
+    },
+    
+    preprocessData: function(financialData) {
+        const days = financialData?.daily || [];
+        const expenses = financialData?.kategoriPengeluaran || [];
+        
+        // Simplified metrics
+        return {
+            totalRevenue: days.reduce((sum, d) => sum + (d.pendapatan || 0), 0),
+            totalExpenses: days.reduce((sum, d) => sum + (d.pengeluaran || 0), 0),
+            totalProfit: days.reduce((sum, d) => sum + (d.laba || 0), 0),
+            expenseCategories: expenses.length
+        };
+    },
+
+    calculatePersonality: function(metrics) {
+        // Simplified calculations with 2 decimal places
+        const riskTolerance = Math.min(100, parseFloat(((metrics.totalProfit / metrics.totalRevenue) * 100 || 0).toFixed(2)));
+        const growthFocus = Math.min(100, parseFloat(((metrics.totalRevenue / metrics.totalExpenses) * 10 || 0).toFixed(2)));
+        const efficiency = Math.min(100, parseFloat(((1 - (metrics.totalExpenses / metrics.totalRevenue)) * 100 || 0).toFixed(2)));
+            
+            return {
+            type: determinePersonalityType({ riskTolerance, growthFocus, efficiency }),
+            description: generateDescription({ riskTolerance, growthFocus, efficiency }),
+            traits: {
                 riskTolerance,
                 growthFocus,
                 efficiency
-            ]
+            }
         };
-    },
-    
-    preprocessData: function(financialData) {
-        const months = financialData?.monthly || [];
-        const expenses = financialData?.expenseCategories || [];
-        
-        return {
-            revenueVolatility: this.calculateVolatility(months.map(m => m.pendapatan || 0)),
-            expenseStability: this.calculateStability(months.map(m => m.pengeluaran || 0)),
-            profitMargin: months.length > 0 ? 
-                months.reduce((sum, m) => sum + (m.pendapatan - m.pengeluaran), 0) / 
-                Math.max(months.reduce((sum, m) => sum + m.pendapatan, 0), 0.01) : 0,
-            reinvestmentRatio: expenses.find(c => c.category === 'Reinvestasi')?.amount || 0,
-            debtRatio: (financialData.debt || 0) / Math.max(financialData.assets || 1, 1),
-            emergencyFund: (financialData.cashReserve || 0) / Math.max(financialData.monthlyExpenses || 1, 1),
-            growthRate: this.calculateGrowthRate(months.map(m => m.pendapatan)),
-            expenseCategories: expenses.length / 10
-        };
-    },
-    
-    calculateVolatility: function(values) {
-        if(!values || values.length < 2) return 0;
-        const mean = values.reduce((a,b) => a + b, 0) / values.length;
-        const variance = values.map(x => Math.pow(x - mean, 2)).reduce((a,b) => a + b, 0) / values.length;
-        return Math.sqrt(variance) / (mean || 1);
-    },
-    
-    calculateStability: function(values) {
-        if(!values || values.length < 2) return 1;
-        const changes = [];
-        for(let i = 1; i < values.length; i++) {
-            const prev = values[i-1] || 1;
-            changes.push(Math.abs(values[i] - prev) / prev);
-        }
-        const avgChange = changes.reduce((a,b) => a + b, 0) / changes.length;
-        return 1 - avgChange;
-    },
-    
-    calculateGrowthRate: function(values) {
-        if(!values || values.length === 0) return 0;
-        const first = values[0] || 1;
-        const last = values[values.length-1] || first;
-        return (last - first) / first;
-    },
-    
-    analyze: async function(financialData) {
-        try {
-            const input = this.preprocessData(financialData || {});
-            const inputTensor = tf.tensor2d([Object.values(input)]);
-            const prediction = await this.model.predict(inputTensor).data();
-            
-            return {
-                riskTolerance: Math.min(Math.max(prediction[0] * 100, 0), 100),
-                growthFocus: Math.min(Math.max(prediction[1] * 100, 0), 100),
-                efficiency: Math.min(Math.max(prediction[2] * 100, 0), 100)
-            };
-        } catch (error) {
-            console.error('Analisis kepribadian gagal:', error);
-            return {
-                riskTolerance: 50,
-                growthFocus: 50,
-                efficiency: 50
-            };
-        }
     }
 };
 
-// Inisialisasi saat load
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        await PersonalityAnalyzer.init();
-    } catch (error) {
-        console.error('Gagal inisialisasi AI:', error);
-        safeUpdate('personality-type', 'Sistem AI Gagal');
-        safeUpdate('personality-desc', 'Analisis kepribadian tidak tersedia');
+// ===== HELPER FUNCTIONS =====
+function determinePersonalityType(analysis) {
+    const types = {
+        'Penjinak Risiko': analysis.riskTolerance < 40,
+        'Pertumbuhan Seimbang': analysis.riskTolerance >= 40 && analysis.riskTolerance <= 60,
+        'Pengambil Risiko': analysis.riskTolerance > 60,
+        'Efisiensi Tinggi': analysis.efficiency > 70,
+        'Inovator': analysis.growthFocus > 70
+    };
+
+    return Object.entries(types)
+        .filter(([_, condition]) => condition)
+        .map(([type]) => type)
+        .join(' • ');
+}
+
+function generateDescription(analysis) {
+    const descriptions = [];
+
+    if (analysis.riskTolerance > 70) {
+        descriptions.push("Anda nyaman dengan risiko tinggi untuk mencapai pertumbuhan yang cepat");
+    } else if (analysis.riskTolerance < 30) {
+        descriptions.push("Anda lebih memilih pendekatan konservatif dengan risiko minimal");
     }
-});
 
-const safeUpdate = (id, value) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
-};
-
-// ===== AI OOPSIE SPOTS =====
-const OopsieAI = {
-    model: null,
-    
-    init: async function() {
-        // Arsitektur model untuk prediksi kesalahan
-        this.model = tf.sequential({
-            layers: [
-                tf.layers.dense({units: 16, activation: 'relu', inputShape: [6]}),
-                tf.layers.dense({units: 8, activation: 'relu'}),
-                tf.layers.dense({units: 1, activation: 'sigmoid'}) // Output: probability of error
-            ]
-        });
-        
-        // Compile model
-        this.model.compile({
-            optimizer: 'adam',
-            loss: 'binaryCrossentropy'
-        });
-        
-        // Latih dengan data sintetis
-        await this.trainSyntheticData();
-    },
-    
-    trainSyntheticData: async function() {
-        // Generate 1000 sampel data sintetis
-        const features = [];
-        const labels = [];
-        
-        for(let i = 0; i < 1000; i++) {
-            const data = this.generateSyntheticData();
-            features.push(data.features);
-            labels.push(data.label);
-        }
-        
-        // Konversi ke tensor
-        const xs = tf.tensor2d(features);
-        const ys = tf.tensor2d(labels, [labels.length, 1]);
-        
-        // Training
-        await this.model.fit(xs, ys, {
-            epochs: 50,
-            batchSize: 32
-        });
-    },
-    
-    generateSyntheticData: function() {
-        // Karakteristik acak untuk simulasi data
-        const revenueVolatility = Math.random();
-        const expenseRatio = Math.random();
-        const profitMargin = Math.random();
-        const cashFlow = Math.random();
-        const debtRatio = Math.random();
-        const growthRate = Math.random();
-        
-        // Label: 1 jika ada potensi kesalahan, 0 jika tidak
-        const label = (revenueVolatility > 0.7 || expenseRatio > 0.8 || profitMargin < 0.1) ? 1 : 0;
-        
-        return {
-            features: [
-                revenueVolatility,
-                expenseRatio,
-                profitMargin,
-                cashFlow,
-                debtRatio,
-                growthRate
-            ],
-            label: label
-        };
-    },
-    
-    preprocessData: function(financialData) {
-        const months = financialData?.monthly || [];
-        const totalRevenue = months.reduce((sum, m) => sum + m.pendapatan, 0);
-        const totalExpenses = months.reduce((sum, m) => sum + m.pengeluaran, 0);
-        
-        return {
-            revenueVolatility: this.calculateVolatility(months.map(m => m.pendapatan)),
-            expenseRatio: totalRevenue > 0 ? totalExpenses / totalRevenue : 0,
-            profitMargin: totalRevenue > 0 ? (totalRevenue - totalExpenses) / totalRevenue : 0,
-            cashFlow: months.length > 0 ? months[months.length-1].laba : 0,
-            debtRatio: 0, // Asumsi tidak ada data utang
-            growthRate: this.calculateGrowthRate(months.map(m => m.pendapatan))
-        };
-    },
-    
-    predictErrors: async function(financialData) {
-        try {
-            const input = this.preprocessData(financialData);
-            const inputTensor = tf.tensor2d([Object.values(input)]);
-            const prediction = await this.model.predict(inputTensor).data();
-            
-            return prediction[0] > 0.5 ? 'High Risk' : 'Low Risk';
-        } catch (error) {
-            console.error('Error prediction failed:', error);
-            return 'Unknown';
-        }
-    },
-    
-    getRecommendations: function(financialData) {
-        const analysis = this.preprocessData(financialData);
-        const recommendations = [];
-        
-        if (analysis.revenueVolatility > 0.7) {
-            recommendations.push({
-                type: 'Revenue Stability',
-                message: 'Revenue shows high volatility. Consider diversifying income sources.'
-            });
-        }
-        
-        if (analysis.expenseRatio > 0.8) {
-            recommendations.push({
-                type: 'Expense Control',
-                message: 'Expenses are too high relative to revenue. Review cost structure.'
-            });
-        }
-        
-        if (analysis.profitMargin < 0.1) {
-            recommendations.push({
-                type: 'Profitability',
-                message: 'Profit margin is low. Explore ways to increase revenue or reduce costs.'
-            });
-        }
-        
-        return recommendations.length > 0 ? recommendations : [{
-            type: 'No Major Issues',
-            message: 'No significant financial risks detected. Maintain current practices.'
-        }];
+    if (analysis.growthFocus > 70) {
+        descriptions.push("Fokus utama pada ekspansi dan pertumbuhan bisnis");
     }
-};
 
-// Inisialisasi AI saat load
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        await OopsieAI.init();
-    } catch (error) {
-        console.error('Oopsie AI initialization failed:', error);
+    if (analysis.efficiency > 70) {
+        descriptions.push("Manajemen operasional yang sangat efisien");
     }
-});
 
-// Update Oopsie Spots card
-function updateOopsieSpots() {
-    const oopsieCard = document.getElementById('oopsie-spots');
-    if (!oopsieCard) return;
+    return descriptions.join(". ") + ".";
+}
+
+// Add date filter component
+function createDateFilter() {
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'date-filter mb-4';
     
-    const riskLevel = OopsieAI.predictErrors(financialData);
-    const recommendations = OopsieAI.getRecommendations(financialData);
-    
-    // Jika tidak ada rekomendasi dan risiko rendah
-    if (recommendations.length === 0 && riskLevel === 'Low Risk') {
-        oopsieCard.innerHTML = `
-            <div class="oopsie-header">
-                <h3>Oopsie Spots</h3>
-                <div class="risk-level low-risk">
-                    ${riskLevel}
-                </div>
+    filterContainer.innerHTML = `
+        <div class="flex gap-4 items-center">
+            <div class="flex-1">
+                <label for="start-date" class="block text-sm font-medium mb-1">Dari Tanggal</label>
+                <input type="date" id="start-date" class="w-full p-2 border rounded">
             </div>
-            <div class="no-oopsies">
-                🎉 Tidak ditemukan masalah yang signifikan
-                <p class="subtext">Data finansial Anda terlihat sehat!</p>
+            <div class="flex-1">
+                <label for="end-date" class="block text-sm font-medium mb-1">Sampai Tanggal</label>
+                <input type="date" id="end-date" class="w-full p-2 border rounded">
             </div>
-        `;
+            <div class="self-end">
+                <button id="apply-filter" class="btn primary">Terapkan Filter</button>
+            </div>
+        </div>
+    `;
+    
+    document.querySelector('.dashboard-header').appendChild(filterContainer);
+    
+    // Add event listener for filter
+    document.getElementById('apply-filter').addEventListener('click', applyDateFilter);
+}
+
+// Add filter function
+function applyDateFilter() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    
+    if (!startDate || !endDate) {
+        alert('Harap pilih rentang tanggal yang valid');
         return;
     }
     
-    oopsieCard.innerHTML = `
-        <div class="oopsie-header">
-            <h3>Oopsie Spots</h3>
-            <div class="risk-level ${riskLevel.toLowerCase().replace(' ', '-')}">
-                ${riskLevel}
-            </div>
-        </div>
-        <div class="oopsie-recommendations">
-            ${recommendations.map(rec => `
-                <div class="recommendation">
-                    <div class="rec-type">${rec.type}</div>
-                    <div class="rec-message">${rec.message}</div>
-                </div>
-            `).join('')}
-        </div>
-    `;
+    const filteredData = financialData.daily.filter(entry => {
+        const entryDate = new Date(entry.tanggal);
+        return entryDate >= new Date(startDate) && entryDate <= new Date(endDate);
+    });
+    
+    updateDashboard({
+        ...financialData,
+        daily: filteredData
+    });
+}
+
+// Tambahkan fungsi setBudget yang hilang
+function setBudget(data) {
+    const budgetElements = document.querySelectorAll('.budget-value');
+    budgetElements.forEach(el => {
+        const category = el.dataset.category;
+        const budget = data.kategoriPengeluaran.find(k => k.kategori === category)?.budget || 0;
+        el.textContent = formatCurrency(budget);
+    });
+}
+
+// Perbaiki fungsi handleFileUpload
+async function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        const data = await readExcelFile(file);
+        if (!data || !data.DataKeuangan || data.DataKeuangan.length === 0) {
+            throw new Error('File tidak berisi data yang valid');
+        }
+
+        // Proses data
+        const processedData = processFinancialData(data);
+        
+        // Update dashboard
+        updateDashboard(processedData);
+        setBudget(processedData); // Panggil fungsi setBudget
+        updateCharts(processedData);
+        
+        console.log('Updated Financial Data:', processedData);
+    } catch (error) {
+        console.error('Error processing file:', error);
+        showError('Gagal memproses file. Pastikan format file sesuai template.');
+    }
+}
+
+// Perbaiki fungsi readExcelFile
+async function readExcelFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            // Pastikan nama sheet sesuai
+            const result = {
+                DataKeuangan: XLSX.utils.sheet_to_json(workbook.Sheets['Data Keuangan']),
+                KategoriPengeluaran: XLSX.utils.sheet_to_json(workbook.Sheets['Kategori Pengeluaran']),
+                Inventaris: XLSX.utils.sheet_to_json(workbook.Sheets['Inventaris']),
+                Karyawan: XLSX.utils.sheet_to_json(workbook.Sheets['Karyawan']),
+                Hutang: XLSX.utils.sheet_to_json(workbook.Sheets['Hutang'])
+            };
+            
+            console.log('Raw Excel Data:', data);
+            resolve(result);
+        };
+        reader.onerror = (error) => reject(error);
+        reader.readAsArrayBuffer(file);
+    });
 }

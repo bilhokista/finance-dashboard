@@ -2,35 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinancialLens Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Rputasi FinLens Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#B83D00">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png">
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <header>
         <div class="logo">
-            <h1>FinancialLens</h1>
+            <img src="https://rputasi.com/assets/images/Logo-Rputasi.png" alt="Rputasi FinLens" class="logo-img" style="height: 40px;">
+            <h1>Rputasi FinLens</h1>
         </div>
-        <nav>
-            <ul>
-                <li><a href="#dashboard" class="active">Dasbor</a></li>
-                <li><a href="#import">Impor Data</a></li>
-                <li><a href="#about">Tentang</a></li>
-            </ul>
-        </nav>
     </header>
 
     <main>
-        <section id="dashboard" class="active-section">
+        <!-- Add modal overlay -->
+        <div id="landing-modal" class="modal-overlay active">
+            <div class="modal-content">
+                <h2>Selamat Datang di Rputasi FinLens</h2>
+                <p>Analisis keuangan bisnis Anda dengan mudah dan cepat</p>
+                <div class="modal-buttons">
+                    <button id="start-analysis" class="btn primary">Mulai Analisa</button>
+                    <button id="learn-more" class="btn secondary">Pelajari Caranya</button>
+                </div>
+            </div>
+        </div>
+
+        <section id="dashboard" class="hidden-section">
             <div class="dashboard-header">
                 <h2>Dasbor Keuangan</h2>
                 <p class="last-updated">Terakhir diperbarui: <span id="last-updated-date">Menggunakan data contoh</span></p>
             </div>
+            <!-- Date filter will be inserted here by JavaScript -->
             <div class="max-w-6xl mx-auto">
                 <!-- Grid Container -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -63,7 +77,7 @@
                     </div>
 
                     <!-- Money Personality Card -->
-                    <div class="card">
+                    <div class="card col-span-2">
                         <h3>🧠 Kepribadian Finansial</h3>
                         <div class="personality-details">
                             <div class="trait">
@@ -73,23 +87,23 @@
                                 </div>
                                 <div class="trait-meter" data-trait="riskTolerance"></div>
                             </div>
-                            <!-- Tambahkan untuk Growth Focus dan Efficiency -->
-                        </div>
-                        <div class="personality-type" id="personality-type">
-                            Menganalisis...
-                        </div>
-                        <div class="personality-desc" id="personality-desc"></div>
-                    </div>
-
-                    <!-- Oopsie Spots Card -->
-                    <div class="card">
-                        <h3 class="emoji-header">🚨 Oopsie Spots</h3>
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-2 p-2 bg-yellow-50 rounded">
-                                <span class="text-2xl">⚠️</span>
-                                <div class="text-sm">Finding oopsies...</div>
+                            <div class="trait">
+                                <div class="trait-header">
+                                    <span>📈 Fokus Pertumbuhan</span>
+                                    <span class="trait-value" id="growth-meter">0%</span>
+                                </div>
+                                <div class="trait-meter" data-trait="growthFocus"></div>
+                            </div>
+                            <div class="trait">
+                                <div class="trait-header">
+                                    <span>⚙️ Efisiensi</span>
+                                    <span class="trait-value" id="efficiency-meter">0%</span>
+                                </div>
+                                <div class="trait-meter" data-trait="efficiency"></div>
                             </div>
                         </div>
+                        <div class="personality-type" id="personality-type">Menganalisis...</div>
+                        <div class="personality-desc" id="personality-desc"></div>
                     </div>
 
                     <!-- Super Boosters Card -->
@@ -99,38 +113,6 @@
                             <div id="improvement-list" class="improvement-horizontal-list">
                                 <!-- Item akan di-generate oleh JS -->
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Money Plan Card -->
-                    <div class="card">
-                        <h3>📅 Rencana Keuangan</h3>
-                        <div class="space-y-3">
-                            <div class="grid grid-cols-2 gap-2">
-                                <input type="number" id="budget-revenue" placeholder="Target Pendapatan">
-                                <input type="number" id="budget-expenses" placeholder="Batas Pengeluaran">
-                            </div>
-                            <button id="set-budget-btn" class="btn-primary">💾 Simpan Rencana</button>
-                            <div id="budget-status" class="text-sm">
-                                Status: <span id="budget-status-value">Belum diatur</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- What If Card -->
-                    <div class="card">
-                        <h3 class="emoji-header">🔮 Analisis Skenario</h3>
-                        <div class="space-y-3">
-                            <div class="space-y-2">
-                                <label>Proyeksi Pendapatan</label>
-                                <input type="number" id="scenario-revenue">
-                            </div>
-                            <div class="space-y-2">
-                                <label>Proyeksi Pengeluaran</label>
-                                <input type="number" id="scenario-expenses">
-                            </div>
-                            <button id="analyze-scenario-btn" class="btn-primary">🔍 Analisis</button>
-                            <div id="scenario-results" class="text-sm"></div>
                         </div>
                     </div>
 
@@ -153,54 +135,23 @@
                         </div>
                     </div>
 
-                    <!-- Health Check Card -->
-                    <div class="card">
-                        <h3 class="emoji-header">📈 Health Check</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <span>💰 Money Growth:</span>
-                                <span id="kpi-1-value" class="text-lg">⭐️ Good</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span>🛡️ Safety:</span>
-                                <span id="kpi-2-value" class="text-lg">🛡️ Safe</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span>🏋️ Debt Load:</span>
-                                <span id="kpi-3-value" class="text-lg">🏋️ Okay</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Inefficiency Indicators Card -->
-                    <div class="card">
+                    <div class="card inefficiency-card col-span-2">
                         <h3>🚨 Titik Masalah</h3>
-                        <div id="inefficiency-list" class="space-y-2">
-                            <div class="p-2 text-center text-gray-500">
-                                🔍 Mencari masalah...
+                        <div class="inefficiency-scroll-container">
+                            <div id="inefficiency-list" class="inefficiency-horizontal-list">
+                                <div class="insight-item">
+                                    <div class="insight-header">
+                                        <span class="insight-icon">⚠️</span>
+                                        <span class="insight-title">Mencari masalah</span>
+                                        <span class="insight-value">...</span>
+                                    </div>
+                                    <div class="insight-description">
+                                       
+                                    </div>
+                                </div>
+                                <!-- More items will be generated by JavaScript -->
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Cash Flow Management Card -->
-                    <div class="card">
-                        <h3>💸 Manajemen Kas</h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span>Proyeksi Kas:</span>
-                                <span id="projected-cash-flow" class="font-bold">Rp0</span>
-                            </div>
-                            <button id="calculate-cash-flow-btn" class="btn-primary">🧮 Hitung Ulang</button>
-                        </div>
-                    </div>
-
-                    <!-- User Feedback Card -->
-                    <div class="card">
-                        <h3>💌 Umpan Balik</h3>
-                        <div class="space-y-3">
-                            <textarea id="user-feedback" placeholder="Tulis masukan Anda..."></textarea>
-                            <button id="submit-feedback-btn" class="btn-primary">📩 Kirim</button>
-                            <div id="feedback-status" class="text-sm"></div>
                         </div>
                     </div>
 
@@ -223,7 +174,7 @@
                 
                 <div id="file-info" class="file-info"></div>
                 
-                <button id="import-btn" class="btn primary" disabled>Import Data</button>
+                <button id="import-btn" aria-label="Import financial data" aria-busy="false" class="btn primary" disabled>Import Data</button>
                 
                 <div class="sample-data">
                     <h3>Gunakan data contoh</h3>
@@ -231,52 +182,195 @@
                 </div>
                 
                 <div class="template-download">
-                    <h3>Need a template?</h3>
-                    <p>Download our template to see the expected format for your data.</p>
-                    <button id="template-btn" class="btn secondary">Download Template</button>
+                    <h3>Butuh Template?</h3>
+                    <p>Unduh template kami untuk melihat format data yang diharapkan.</p>
+                    <button id="template-btn" class="btn secondary">Unduh Template</button>
+                    <p class="text-sm text-gray-600 mt-2">Template ini mencakup:</p>
+                    <ul class="list-disc list-inside text-sm text-gray-600">
+                        <li>Data Keuangan Harian (termasuk metode pembayaran)</li>
+                        <li>Kategori Pengeluaran (dengan budget bulanan)</li>
+                        <li>Manajemen Inventaris (dengan harga satuan)</li>
+                        <li>Data Karyawan (termasuk tunjangan dan total gaji)</li>
+                        <li>Hutang & Liabilitas (dengan status pembayaran)</li>
+                    </ul>
                 </div>
             </div>
         </section>
 
         <section id="about" class="hidden-section">
             <div class="about-container">
-                <h2>About FinancialLens</h2>
-                <p>FinancialLens is a simple yet powerful financial dashboard designed specifically for small business owners who want to gain insights from their financial data without the complexity of advanced accounting software.</p>
+                <h2>Tentang Rputasi FinLens</h2>
+                <p>Rputasi FinLens adalah dashboard keuangan sederhana namun powerful yang dirancang khusus untuk pemilik usaha kecil yang ingin mendapatkan wawasan dari data keuangan mereka tanpa kerumitan software akuntansi yang kompleks.</p>
                 
-                <h3>How It Works</h3>
+                <h3>Cara Menggunakan</h3>
                 <ol>
-                    <li><strong>Import Your Data:</strong> Upload your Excel or CSV file containing your financial data.</li>
-                    <li><strong>View Your Dashboard:</strong> Instantly see your key financial metrics including profit & loss, inefficiencies, and improvement opportunities.</li>
-                    <li><strong>Understand Your Financial Character:</strong> Get insights into your business's financial behavior and tendencies.</li>
+                    <li><strong>Unduh Template:</strong>
+                        <ul>
+                            <li>Klik tombol "Download Template"</li>
+                            <li>Buka file template di Excel atau Google Sheets</li>
+                        </ul>
+                    </li>
+                    <li><strong>Sesuaikan Data Anda:</strong>
+                        <ul>
+                            <li>Isi data keuangan Anda sesuai kolom yang tersedia</li>
+                            <li>AI kami akan membantu memvalidasi format data</li>
+                            <li>Simpan file dalam format .xlsx atau .csv</li>
+                        </ul>
+                    </li>
+                    <li><strong>Unggah Data:</strong>
+                        <ul>
+                            <li>Klik tombol "Choose File"</li>
+                            <li>Pilih file yang telah Anda siapkan</li>
+                            <li>Klik "Import Data" untuk memulai analisis</li>
+                        </ul>
+                    </li>
+                    <li><strong>Lihat Dashboard:</strong>
+                        <ul>
+                            <li>Pantau metrik keuangan utama seperti laba rugi</li>
+                            <li>Identifikasi ketidakefisienan dalam operasional</li>
+                            <li>Temukan peluang peningkatan bisnis</li>
+                        </ul>
+                    </li>
+                    <li><strong>Pahami Karakter Finansial:</strong>
+                        <ul>
+                            <li>Dapatkan wawasan tentang perilaku keuangan bisnis Anda</li>
+                            <li>Pahami toleransi risiko dan fokus pertumbuhan</li>
+                            <li>Identifikasi area untuk meningkatkan efisiensi</li>
+                        </ul>
+                    </li>
                 </ol>
                 
-                <h3>Data Privacy</h3>
-                <p>FinancialLens processes all data locally in your browser. Your financial information never leaves your computer, ensuring complete privacy and security.</p>
+                <h3>Keamanan Data</h3>
+                <p>Rputasi FinLens memproses semua data secara lokal di browser Anda. Informasi keuangan Anda tidak pernah meninggalkan komputer Anda, menjamin privasi dan keamanan yang lengkap.</p>
                 
-                <h3>Next Steps</h3>
-                <p>This is an MVP version of FinancialLens. Future updates will include:</p>
+                <h3>Fitur Mendatang</h3>
+                <p>Ini adalah versi MVP dari Rputasi FinLens. Update selanjutnya akan mencakup:</p>
                 <ul>
-                    <li>Advanced analytics and forecasting</li>
-                    <li>Custom report generation</li>
-                    <li>Data integrations with accounting software</li>
-                    <li>User accounts and data saving</li>
+                    <li>Analisis dan prediksi yang lebih canggih</li>
+                    <li>Generasi laporan kustom</li>
+                    <li>Integrasi dengan software akuntansi</li>
+                    <li>Akun pengguna dan penyimpanan data</li>
+                    <li>Panduan langkah demi langkah untuk pemula</li>
+                    <li>Analisis perbandingan dengan industri</li>
                 </ul>
+                
+                <h3>Tips Penggunaan Template</h3>
+                <ul>
+                    <li>Pastikan format tanggal konsisten (YYYY-MM-DD)</li>
+                    <li>Gunakan mata uang Rupiah tanpa titik (contoh: 1000000)</li>
+                    <li>Isi semua kolom yang diperlukan</li>
+                    <li>Simpan file sebelum diunggah</li>
+                    <li>Jika ada kesalahan, sistem akan memberikan petunjuk perbaikan</li>
+                </ul>
+
+                <h3>Panduan Membaca Dashboard</h3>
+                <div class="dashboard-guide">
+                    <div class="guide-item">
+                        <h4>💰 Cerita Uang</h4>
+                        <ul>
+                            <li><strong>Pendapatan:</strong> Total uang yang masuk dari penjualan atau layanan</li>
+                            <li><strong>Pengeluaran:</strong> Total biaya operasional dan produksi</li>
+                            <li><strong>Laba Bersih:</strong> Pendapatan dikurangi pengeluaran (warna hijau = untung, merah = rugi)</li>
+                            <li><strong>Grafik:</strong> Tren keuangan selama periode tertentu</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-item">
+                        <h4>🧠 Kepribadian Finansial</h4>
+                        <ul>
+                            <li><strong>Toleransi Risiko:</strong> Seberapa besar bisnis Anda mengambil risiko (tinggi = >60%, sedang = 40-60%, rendah = <40%)</li>
+                            <li><strong>Fokus Pertumbuhan:</strong> Seberapa agresif bisnis Anda dalam ekspansi (tinggi = >70%)</li>
+                            <li><strong>Efisiensi:</strong> Seberapa efektif bisnis Anda mengelola sumber daya (tinggi = >70%)</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-item">
+                        <h4>🚀 Peluang Peningkatan</h4>
+                        <ul>
+                            <li>Rekomendasi AI untuk meningkatkan performa bisnis</li>
+                            <li>Prioritas berdasarkan dampak terbesar</li>
+                            <li>Estimasi potensi peningkatan laba</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-item">
+                        <h4>📊 Money Health</h4>
+                        <ul>
+                            <li><strong>Profit Power:</strong> Persentase laba dari total pendapatan (baik = >10%)</li>
+                            <li><strong>Cost Ratio:</strong> Persentase biaya dari total pendapatan (baik = <70%)</li>
+                            <li><strong>Year Growth:</strong> Pertumbuhan tahunan bisnis Anda</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-item">
+                        <h4>🚨 Titik Masalah</h4>
+                        <ul>
+                            <li>Area yang memerlukan perhatian segera</li>
+                            <li>Indikator masalah dengan tingkat keparahan (tinggi, sedang, rendah)</li>
+                            <li>Analisis penyebab dan dampak</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
     <footer>
         <div class="footer-content">
-            <p>&copy; 2025 FinancialLens. Hak cipta dilindungi.</p>
+            <div class="footer-brand">
+                <img src="https://rputasi.com/assets/images/Logo-Rputasi.png" alt="Rputasi" class="footer-logo" style="height: 40px;">
+                <p>Rputasi FinLens - Solusi Analisis Keuangan Modern</p>
+            </div>
             <div class="footer-links">
                 <a href="#privacy">Kebijakan Privasi</a>
                 <a href="#terms">Syarat Penggunaan</a>
                 <a href="#contact">Kontak</a>
             </div>
+            <div class="footer-social">
+                <a href="#" class="social-icon">FB</a>
+                <a href="#" class="social-icon">TW</a>
+                <a href="#" class="social-icon">IG</a>
+            </div>
         </div>
     </footer>
 
     <div id="loading-indicator" style="display: none;">Loading...</div>
+
+    <div id="error-display" class="error-message" style="display: none;"></div>
+
+    <nav class="bottom-nav">
+        <ul>
+            <li>
+                <a href="#dashboard" class="active">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Dasbor</span>
+                </a>
+            </li>
+            <li>
+                <a href="#import">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-upload">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Impor</span>
+                </a>
+            </li>
+            <li>
+                <a href="#about">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12" y2="8"></line>
+                    </svg>
+                    <span>Tentang</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     <script src="script.js"></script>
 </body>
